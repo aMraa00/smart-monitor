@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# builds
+dist/
+build/
+out/
+.pio/
+*.bin
+*.elf
+*.map
+
+# local environment - NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+!*.env.example
+
+# logs
+*.log
+npm-debug.log*
+socket-out.txt
+logs/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# test + tooling artifacts
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# local databases
+data/
+

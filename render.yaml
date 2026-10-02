@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: smart-monitor-v1-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render assigns PORT automatically; the server reads process.env.PORT.
+      - key: CLIENT_URL
+        sync: false # set to https://<your-app>.vercel.app after the web deploy
+      - key: MONGO_URI
+        sync: false # Atlas: mongodb+srv://<user>:<password>@<cluster>/uhaalag_monitor_v1
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: DEVICE_TOKEN_SECRET
+        generateValue: true
+      - key: DEVICE_MAX_CLOCK_SKEW_S
+        value: 300
+      - key: DEVICE_NONCE_TTL_S
+        value: 600
+      - key: TELEMETRY_MAX_BATCH
+        value: 120
+      - key: PROVISIONING_TOKEN_TTL_S
+        value: 900
+      - key: CLAIM_CODE_TTL_S
+        value: 900
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+      - key: RATE_LIMIT_MAX
+        value: 300
+      - key: LOG_LEVEL
+        value: info

@@ -1,0 +1,219 @@
+/* Data widgets: tiles, charts, device cards, tables, lists. */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
+
+.tile {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--tile-color, var(--accent));
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tile--warn {
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.tile__head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tile__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tile__quality {
+  margin-left: auto;
+  font-size: 0.68rem;
+  color: var(--warn);
+  text-transform: uppercase;
+}
+
+.tile__value {
+  font-size: 1.6rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.tile__unit {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.tile__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tile__time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sparkline--empty {
+  opacity: 0.25;
+}
+
+/* ---------------------------------------------------------------- charts */
+
+.chart {
+  position: relative;
+  width: 100%;
+}
+
+.chart--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.chart__grid {
+  stroke: rgba(148, 163, 184, 0.14);
+  stroke-width: 1;
+}
+
+.chart__axis {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-family: var(--mono);
+}
+
+.chart__unit {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.chart__crosshair {
+  stroke: rgba(148, 163, 184, 0.45);
+  stroke-dasharray: 3 3;
+}
+
+.chart__tooltip {
+  position: absolute;
+  top: 8px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+}
+
+.chart__tooltip span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* --------------------------------------------------------- device cards */
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.9rem;
+}
+
+.device-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.95rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.device-card:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.device-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.device-card__name {
+  font-size: 1rem;
+}
+
+.device-card__id {
+  display: block;
+  font-size: 0.76rem;
+}
+
+.device-card__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.device-card__meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.device-card__caps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+}
+
+.device-card__caps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--chip-color, var(--border));
+  color: var(--text-muted);
+}
+
+.device-card__more {
+  border-color: var(--border) !important;
+}
+
+.device-card__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+}
