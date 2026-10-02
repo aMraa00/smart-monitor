@@ -37,4 +37,17 @@ const me = asyncHandler(async (req, res) => {
   return ok(res, { user });
 });
 
-module.exports = { register, login, refresh, logout, me };
+/** GET /users - admin only: list accounts. */
+const listUsers = asyncHandler(async (req, res) => {
+  const { items, meta } = await authService.listUsers(req.query);
+  return ok(res, items, meta);
+});
+
+/** POST /users - admin only: create an account with an explicit role. */
+const createUser = asyncHandler(async (req, res) => {
+  // No session is returned: the new account signs in for itself.
+  const { user } = await authService.createUser(req.body);
+  return created(res, { user });
+});
+
+module.exports = { register, login, refresh, logout, me, listUsers, createUser };

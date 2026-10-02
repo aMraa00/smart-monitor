@@ -13,9 +13,13 @@ import TransferForm from '../features/devices/TransferForm';
 import * as devicesApi from '../api/devices';
 import { useDeviceStore } from '../stores/deviceStore';
 import { useUiStore } from '../stores/uiStore';
+import { useAuth } from '../hooks/useAuth';
 import { useTelemetry } from '../hooks/useTelemetry';
 import { subscribeDevice } from '../hooks/useSocket';
 import { isOnline, formatDateTime, formatRelative, STATUS_TONE } from '../utils/formatters';
+
+/** Roles allowed to revoke/delete a device (mirrors `requireRole` server-side). */
+const DESTRUCTIVE_ROLES = ['admin', 'owner'];
 
 /**
  * Everything about one station: live readings, history, alert rules,
@@ -29,6 +33,7 @@ export function DeviceDetailPage() {
   const { deviceId } = useParams();
   const navigate = useNavigate();
   const toast = useUiStore((s) => s.toast);
+  const { user } = useAuth();
   const merge = useDeviceStore((s) => s.merge);
   const remove = useDeviceStore((s) => s.remove);
 
@@ -140,6 +145,10 @@ export function DeviceDetailPage() {
   if (!device) return <LoadingBlock label="Loading device" />;
 
   const online = isOnline(device.lastSeenAt);
+  // Managers may read and configure the fleet but never revoke or delete a
+  // station, so the danger zone is hidden for them instead of 403-ing on click.
+  // The API enforces the same rule regardless of what is rendered here.
+  const canDestroy = DESTRUCTIVE_ROLES.includes(user?.role);
 
   return (
     <>
@@ -200,20 +209,29 @@ export function DeviceDetailPage() {
           <TransferForm onTransfer={transfer} />
         </Card>
 
-        <Card title="Danger zone" subtitle="Revoking or deleting breaks the station's access to this platform">
-          <div className="button-row">
-            <button type="button" className="button button--ghost" onClick={() => setConfirm('revoke')}>
-              Revoke device
-            </button>
-            <button type="button" className="button button--danger" onClick={() => setConfirm('delete')}>
-              Delete device
-            </button>
-          </div>
-          <p className="muted">
-            Revoked: telemetry is rejected but history is kept. Deleted: the device and every dependent
-            document (telemetry, rules, alerts) is removed.
-          </p>
-        </Card>
+        {canDestroy ? (
+          <Card title="Danger zone" subtitle="Revoking or deleting breaks the station's access to this platform">
+            <div className="button-row">
+              <button type="button" className="button button--ghost" onClick={() => setConfirm('revoke')}>
+                Revoke device
+              </button>
+              <button type="button" className="button button--danger" onClick={() => setConfirm('delete')}>
+                Delete device
+              </button>
+            </div>
+            <p className="muted">
+              Revoked: telemetry is rejected but history is kept. Deleted: the device and every dependent
+              document (telemetry, rules, alerts) is removed.
+            </p>
+          </Card>
+        ) : (
+          <Card title="Danger zone" subtitle="Restricted for your role">
+            <p className="muted">
+              Your role can read and configure this station, but only its owner or an administrator may revoke or
+              delete it.
+            </p>
+          </Card>
+        )}
       </div>
 
       <Modal open={Boolean(secret)} onClose={() => setSecret(null)} title="New device secret">

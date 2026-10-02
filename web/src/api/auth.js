@@ -20,6 +20,18 @@ export async function fetchMe() {
   return data.user;
 }
 
+/** GET /auth/users - admin only: account list. */
+export async function listUsers(params = {}) {
+  const { data, meta } = await request({ method: 'get', url: '/auth/users', params });
+  return { users: data, meta };
+}
+
+/** POST /auth/users - admin only: create an account with an explicit role. */
+export async function createUser({ email, password, name, role }) {
+  const { data } = await request({ method: 'post', url: '/auth/users', data: { email, password, name, role } });
+  return data.user;
+}
+
 /** POST /auth/logout - best effort; the local session is cleared either way. */
 export async function logout() {
   try {

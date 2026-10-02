@@ -1,7 +1,7 @@
 'use strict';
 
 const { z } = require('zod');
-const { email, password } = require('./common');
+const { email, password, pagination } = require('./common');
 
 const registerSchema = z.object({
   email,
@@ -18,4 +18,16 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(10, 'refreshToken is required'),
 });
 
-module.exports = { registerSchema, loginSchema, refreshSchema };
+const createUserSchema = z.object({
+  email,
+  password,
+  name: z.string().trim().max(120).optional().default(''),
+  role: z.enum(['admin', 'manager', 'owner', 'viewer']).optional().default('owner'),
+});
+
+const listUsersQuerySchema = z.object({
+  role: z.enum(['admin', 'manager', 'owner', 'viewer']).optional(),
+  ...pagination,
+});
+
+module.exports = { registerSchema, loginSchema, refreshSchema, createUserSchema, listUsersQuerySchema };

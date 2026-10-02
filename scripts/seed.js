@@ -17,6 +17,7 @@ const path = require('path');
 require(path.resolve(__dirname, '..', 'server', 'src', 'config', 'index.js'));
 
 const db = require('../server/src/config/db');
+const authService = require('../server/src/services/auth.service');
 const { User, Device, Telemetry, TelemetryLatest, AlertRule, syncIndexes } = require('../server/src/models');
 
 const SEED_EMAIL = process.env.SEED_EMAIL || 'owner@example.com';
@@ -55,7 +56,16 @@ async function seed() {
   await db.connect();
   await syncIndexes();
 
-  // ---- account ------------------------------------------------------------
+  // ---- accounts -----------------------------------------------------------
+  // Bootstrap accounts: the FIRST admin/manager/owner come from the server
+  // environment (Render env vars), never from a public form. The very same
+  // idempotent routine also runs on server boot - see auth.service.
+  const bootstrapped = await authService.ensureBootstrapAccounts();
+  for (const { email, role, action } of bootstrapped) {
+    console.log(`${action.padEnd(13)} ${role.padEnd(8)} ${email}`);
+  }
+
+  // ---- demo account (local development only) ------------------------------
   let user = await User.findOne({ email: SEED_EMAIL });
   if (!user) {
     user = await User.create({

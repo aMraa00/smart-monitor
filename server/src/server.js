@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * Process entry point: connect the database, sync indexes, start HTTP + WS,
- * and shut down gracefully.
+ * Process entry point: connect the database, sync indexes, ensure the first
+ * privileged accounts exist, start HTTP + WS, and shut down gracefully.
  */
 
 const http = require('http');
@@ -10,6 +10,7 @@ const config = require('./config');
 const logger = require('./config/logger');
 const db = require('./config/db');
 const { syncIndexes } = require('./models');
+const authService = require('./services/auth.service');
 const createApp = require('./app');
 const { createSocketServer } = require('./socket');
 
@@ -17,6 +18,14 @@ async function main() {
   // ---- database -------------------------------------------------------------
   await db.connect();
   await syncIndexes();
+
+  // ---- bootstrap accounts ---------------------------------------------------
+  // Self-registration can only create an `owner`, so without this a fresh
+  // deployment would have nobody able to create the first admin. Idempotent.
+  const bootstrapped = await authService.ensureBootstrapAccounts();
+  for (const account of bootstrapped) {
+    logger.info({ ...account }, 'bootstrap account ensured');
+  }
 
   // ---- http + realtime ------------------------------------------------------
   const app = createApp();

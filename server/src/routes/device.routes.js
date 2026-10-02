@@ -3,7 +3,7 @@
 const express = require('express');
 const controller = require('../controllers/device.controller');
 const validate = require('../middleware/validate.middleware');
-const { authenticate } = require('../middleware/auth.middleware');
+const { authenticate, requireRole } = require('../middleware/auth.middleware');
 const { loadOwnedDevice } = require('../middleware/ownership.middleware');
 const {
   listQuerySchema,
@@ -32,8 +32,10 @@ router.get('/:deviceId', loadOwnedDevice, controller.getOne);
 router.patch('/:deviceId', validate({ body: updateSchema }), loadOwnedDevice, controller.update);
 router.post('/:deviceId/rotate-secret', loadOwnedDevice, controller.rotateSecret);
 router.post('/:deviceId/transfer', validate({ body: transferSchema }), loadOwnedDevice, controller.transfer);
-router.post('/:deviceId/revoke', loadOwnedDevice, controller.revoke);
-router.delete('/:deviceId', loadOwnedDevice, controller.remove);
+// Destructive actions: owner of the device or admin. Managers are read/config
+// operators and can never revoke or delete a station.
+router.post('/:deviceId/revoke', requireRole('admin', 'owner'), loadOwnedDevice, controller.revoke);
+router.delete('/:deviceId', requireRole('admin', 'owner'), loadOwnedDevice, controller.remove);
 
 // Alerts
 router.get('/:deviceId/alerts', validate({ query: listAlertsQuerySchema }), loadOwnedDevice, controller.listAlerts);

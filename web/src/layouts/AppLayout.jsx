@@ -5,10 +5,21 @@ import { useDeviceStore } from '../stores/deviceStore';
 import { useUiStore } from '../stores/uiStore';
 import Toaster from '../components/Toaster';
 
+/**
+ * Sidebar entries, filtered by role.
+ *
+ * Filtering is a UX convenience only - App.jsx guards the matching routes and
+ * the API re-checks every request, so hiding a link is never the security
+ * control (prompt §42).
+ */
+const ALL_ROLES = ['admin', 'manager', 'owner', 'viewer'];
+
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: '📊' },
-  { to: '/devices', label: 'Devices', icon: '📡' },
-  { to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/', label: 'Dashboard', icon: '📊', roles: ALL_ROLES },
+  { to: '/devices', label: 'Devices', icon: '📡', roles: ALL_ROLES },
+  { to: '/guide', label: 'Setup guide', icon: '📖', roles: ALL_ROLES },
+  { to: '/users', label: 'Users', icon: '👥', roles: ['admin'] },
+  { to: '/settings', label: 'Settings', icon: '⚙️', roles: ALL_ROLES },
 ];
 
 const SOCKET_TONE = {
@@ -31,6 +42,10 @@ export function AppLayout() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const setSidebar = useUiStore((s) => s.setSidebar);
   const resetDevices = useDeviceStore((s) => s.reset);
+
+  // A signed-in user always has a role; treat a missing one as "no access"
+  // rather than showing everything.
+  const visibleNav = NAV.filter((item) => item.roles.includes(user?.role));
 
   async function handleLogout() {
     await logout();
@@ -59,6 +74,7 @@ export function AppLayout() {
           <span className="topbar__user" title={user?.email}>
             {user?.name || user?.email || 'Account'}
           </span>
+          {user?.role && <span className="badge badge--info">{user.role}</span>}
           <button type="button" className="button button--ghost" onClick={handleLogout}>
             Sign out
           </button>
@@ -67,7 +83,7 @@ export function AppLayout() {
 
       <div className={`app__body ${sidebarOpen ? 'app__body--open' : ''}`.trim()}>
         <nav className="sidebar" aria-label="Main">
-          {NAV.map((item) => (
+          {visibleNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

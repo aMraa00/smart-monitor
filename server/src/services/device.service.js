@@ -17,6 +17,7 @@ const {
   User,
 } = require('../models');
 const ApiError = require('../utils/apiError');
+const { isPrivileged } = require('../utils/roles');
 const {
   generateDeviceSecret,
   encryptDeviceSecret,
@@ -36,18 +37,17 @@ async function getOwnedDevice(deviceId, user) {
   if (!device) throw ApiError.notFound('DEVICE_NOT_FOUND', 'Device not found');
 
   const isOwner = device.owner && device.owner.toString() === user._id.toString();
-  const isAdmin = user.role === 'admin';
-  if (!isOwner && !isAdmin) {
+  if (!isOwner && !isPrivileged(user)) {
     // Same error as "not found": prevents device enumeration (threat T22).
     throw ApiError.notFound('DEVICE_NOT_FOUND', 'Device not found');
   }
   return device;
 }
 
-/** List devices owned by a user (admins may list everything). */
+/** List devices: admins/managers see the fleet, owners see only their own. */
 async function listDevices(user, { status, page = 1, limit = 50 } = {}) {
   const filter = {};
-  if (user.role !== 'admin') filter.owner = user._id;
+  if (!isPrivileged(user)) filter.owner = user._id;
   if (status) filter.status = status;
 
   const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);

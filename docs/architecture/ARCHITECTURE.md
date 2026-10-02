@@ -87,7 +87,13 @@ MicroSD = local offline buffer. **RTC is NOT used.**
 - FR-A1 Email+password registration, bcrypt-hashed (cost >= 12).
 - FR-A2 Short-lived access JWT + rotating refresh token.
 - FR-A3 Refresh rotation with reuse detection -> revoke whole token family on replay.
-- FR-A4 Roles `owner` / `admin` / `viewer`, enforced server-side (never frontend-only).
+- FR-A4 Roles `owner` / `admin` / `manager` / `viewer`, enforced server-side (never
+  frontend-only). The vocabulary lives in `utils/roles.js` and is shared by the
+  HTTP middleware, the service layer and the Socket.IO room guard.
+- FR-A5 Self-registration can only ever create an `owner`. The first privileged
+  accounts come from the server environment (`BOOTSTRAP_*`), applied idempotently
+  on every boot; every later account is created by an admin through
+  `POST /auth/users` (threat T17).
 
 ### FR-B Device provisioning & identity
 - FR-B1 Firmware **never** hard-codes Wi-Fi credentials.
@@ -165,13 +171,24 @@ MicroSD = local offline buffer. **RTC is NOT used.**
 |---|---|---|
 | Guest | Unauthenticated | register, login, marketing page |
 | Owner | Registered user who claimed a device | full CRUD on *own* devices, read own telemetry, manage alert rules |
-| Admin | Platform operator | read all, revoke devices/users, rotate secrets |
+| Manager | Fleet operator | read **every** device, tune settings + alert rules, rotate secrets, transfer; **never** revoke/delete a device, **never** manage accounts |
+| Admin | Platform operator | read all, revoke/delete devices, create and promote accounts |
 | Viewer | Read-only collaborator (V1 placeholder) | read a shared device |
 | Device | ESP32 firmware | `telemetry:write` (own), `config:read` (own) |
 | Provisioning client | Device in first-boot mode | `provision:register` (one-time token) |
 
 **Device role is denied everything a user role has** — HMAC device credentials can never read
 another device; user JWTs can never submit telemetry.
+
+**A non-owner is refused with 404, never 403** — otherwise the error itself
+enumerates which device ids exist (threat T22). A real 403 is reserved for a
+*known* caller attempting an action its role forbids (e.g. a manager calling
+`DELETE /devices/:id`).
+
+**Role changes take effect immediately** — `authenticate` re-reads the account
+from MongoDB on every request, so downgrading a role revokes the privilege even
+for an access token that is still valid (threat T17). The frontend nav/route
+guards are presentation only and grant no authority whatsoever.
 
 ---
 
@@ -193,6 +210,9 @@ another device; user JWTs can never submit telemetry.
 | UC-12 | Owner | Rotate secret | owns device | POST /rotate -> new secret issued once |
 | UC-13 | Admin | Revoke device | admin | device blacklisted; HMAC rejected |
 | UC-14 | Device | Recover time | NTP lost | mark `timeQuality=estimated`, keep sampling |
+| UC-15 | System | Bootstrap first admin | fresh deployment, `BOOTSTRAP_*` set | boot -> account ensured idempotently |
+| UC-16 | Admin | Create an operator account | admin signed in | POST /auth/users(role) -> account signs in itself |
+| UC-17 | Manager | Watch the whole fleet | manager signed in | device list spans every owner; destructive actions 403 |
 
 ---
 

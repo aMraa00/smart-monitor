@@ -83,6 +83,32 @@ async function registerUser(overrides = {}) {
 }
 
 /**
+ * Create an account with an explicit role and return a ready-to-use session.
+ *
+ * Self-registration can only ever produce an `owner`, so tests that exercise
+ * admin/manager behaviour have to mint the account directly. This mirrors how
+ * a real deployment bootstraps its first privileged accounts (see
+ * `authService.ensureBootstrapAccounts`).
+ *
+ * @param {string} role admin | manager | owner | viewer
+ */
+async function createUserWithRole(role) {
+  const email = `${role}-${crypto.randomBytes(5).toString('hex')}@example.com`;
+  const password = 'Str0ng!Passw0rd';
+  const { User } = require('../../src/models');
+
+  await User.create({
+    email,
+    passwordHash: await User.hashPassword(password),
+    name: `${role} account`,
+    role,
+  });
+
+  const login = await agent().post('/api/v1/auth/login').send({ email, password }).expect(200);
+  return { email, password, user: login.body.data.user, accessToken: login.body.data.accessToken };
+}
+
+/**
  * Full device lifecycle: register -> exchange, optionally claim.
  * @returns {Promise<{deviceId, deviceSecret, claimCode, provisioningToken, hwId}>}
  */
@@ -183,6 +209,7 @@ module.exports = {
   agent,
   uniqueHwId,
   registerUser,
+  createUserWithRole,
   provisionDevice,
   claimDevice,
   canonicalString,

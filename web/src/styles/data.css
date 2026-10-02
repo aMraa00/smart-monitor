@@ -181,6 +181,32 @@
   user-select: all;
 }
 
+/* ------------------------------------------------------------ bullet list */
+
+.bullet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bullet-list > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Keep the inline badge from stretching the line box it sits in. */
+.bullet-list > li > .badge {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+}
+
 /* ---------------------------------------------------------- empty state */
 
 .empty-state {

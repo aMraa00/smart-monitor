@@ -17,6 +17,7 @@ backend ямар мэдрэгч байгааг **мэдэхгүй** — төхө
 smart-monitor-v1/
 ├── firmware/smart_monitor_v1/   ESP32 sketch (non-blocking, capability-based)
 ├── server/                      Node/Express/Mongoose API + Socket.IO  (P1-P6, P10)
+│   └── src/utils/roles.js       the one role vocabulary (RBAC source of truth)
 ├── web/                         React dashboard                        (P8)
 ├── scripts/                     seed, sign-request, smoke-test         (P9)
 ├── docs/architecture/           ARCHITECTURE.md + diagrams/
@@ -51,10 +52,29 @@ npm run dev               # http://localhost:5173
 
 Демо нэвтрэлт: `owner@example.com` / `Str0ng!Passw0rd`
 
+## Роли (RBAC)
+
+Дөрвөн role байна; бүгд **зөвхөн сервер дээр** хүчин төгөлдөр (үүсгэсэн олонхон
+`server/src/utils/roles.js` дахь ганц толь бичгийг хувааж авдаг):
+
+| Role | Хэрэглэгчийн хувьд | Төхөөрөмжийн хувьд |
+|---|---|---|
+| `owner` | Өөрийн төхөөрөмжүүдийг бүрэн удирдана | өөрийнх нь бүх үйлдэл |
+| `manager` | Хэрэглэгч үүсгэхгүй | бүх төхөөрөмжийг **уншина/тохируулна**, гэхдээ revoke/delete хийхгүй |
+| `admin` | Хэрэглэгч үүсгэнэ, role өгнө | бүх төхөөрөмж дээр бүх үйлдэл |
+| `viewer` | зөвхөн унших | уншихад хязгаарлагдсан |
+
+**Эхний admin-ыг хэрхэн үүсгэх вэ?** Өөрөөр тэрдүүлбэр эрхээс гадна үргэлж
+`owner` байдаг (privilege escalation-ыг хагасах дүрэм). Иймээс `server/.env` дээр
+`BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD` (мөн `MANAGER`, `OWNER`)
+гэж бичээд серверээ асаана. API **boot бүрд** эдгээр аккаунтыг үүсгэх/хэрэглэгчийн
+role-ыг засах бөгөөд давхар хийхэд огт асуудал үүсэхгүй (нууцлал хэвээр үлдэнэ).
+Дараа нь бүх цаашдын аккаунтыг **Dashboard → Users** хуудасаас бүрдэж болно.
+
 ## Тест
 
 ```bash
-cd server && npm test      # 8 suites, 88 tests (Jest + mongodb-memory-server)
+cd server && npm test      # 9 suites, 103 tests (Jest + mongodb-memory-server)
 cd web && npm run build    # production build
 node scripts/smoke-test.js # иж бүрэн HTTP аюулгүй байдлын шалгалт (API ажиллаж байх ёстой)
 ```

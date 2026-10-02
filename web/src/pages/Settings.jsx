@@ -3,6 +3,9 @@ import Badge from '../components/Badge';
 import { useAuth } from '../hooks/useAuth';
 import { useDeviceStore } from '../stores/deviceStore';
 
+/** Accent per role, shared by the settings badge and the top bar. */
+const ROLE_TONE = { admin: 'info', manager: 'warn', owner: 'neutral', viewer: 'neutral' };
+
 /**
  * Account surface.
  *
@@ -35,7 +38,7 @@ export function SettingsPage() {
           <div>
             <dt>Role</dt>
             <dd>
-              <Badge tone={user?.role === 'admin' ? 'info' : 'neutral'}>{user?.role || 'owner'}</Badge>
+              <Badge tone={ROLE_TONE[user?.role] || 'neutral'}>{user?.role || 'owner'}</Badge>
             </dd>
           </div>
         </dl>

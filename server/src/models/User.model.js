@@ -4,7 +4,15 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
 
-const ROLES = ['owner', 'admin', 'viewer'];
+/**
+ * Account roles (RBAC):
+ *   admin   - full access: every device, creates/promotes users, manages the fleet
+ *   manager - fleet operator: reads every device + tunes settings/alerts, cannot
+ *             create or delete users, cannot revoke/delete devices
+ *   owner   - device owner: claims and manages their OWN stations only
+ *   viewer  - legacy read-only alias, treated like a restricted owner account
+ */
+const ROLES = ['owner', 'admin', 'manager', 'viewer'];
 
 const userSchema = new mongoose.Schema(
   {

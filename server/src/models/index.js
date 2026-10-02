@@ -57,4 +57,6 @@ module.exports = {
   AlertRule,
   Alert,
   syncIndexes,
+  /** The closed role vocabulary; the services validate against this list. */
+  ROLES: User.ROLES,
 };

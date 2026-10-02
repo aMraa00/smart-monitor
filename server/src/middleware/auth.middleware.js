@@ -7,11 +7,15 @@
  * revoked/deleted account or a downgraded role takes effect immediately
  * (threat T17). Device requests never reach this middleware: HMAC credentials
  * cannot authenticate as a user and vice versa.
+ *
+ * The role vocabulary itself lives in utils/roles.js so the service layer and
+ * the socket layer share exactly the same rules.
  */
 
 const { User } = require('../models');
 const ApiError = require('../utils/apiError');
 const { verifyAccessToken } = require('../services/token.service');
+const { isPrivileged, isAdmin, PRIVILEGED_ROLES } = require('../utils/roles');
 
 /** Extract a Bearer token from the Authorization header. */
 function extractBearer(req) {
@@ -53,4 +57,4 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { authenticate, requireRole, extractBearer };
+module.exports = { authenticate, requireRole, extractBearer, isPrivileged, isAdmin, PRIVILEGED_ROLES };

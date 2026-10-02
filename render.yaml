@@ -36,3 +36,17 @@ services:
         value: 300
       - key: LOG_LEVEL
         value: info
+      # The API ensures these accounts exist on every boot (see auth.service
+      # `ensureBootstrapAccounts`). Fill BOTH halves of a pair, or leave it empty.
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: BOOTSTRAP_MANAGER_EMAIL
+        sync: false
+      - key: BOOTSTRAP_MANAGER_PASSWORD
+        sync: false
+      - key: BOOTSTRAP_OWNER_EMAIL
+        sync: false
+      - key: BOOTSTRAP_OWNER_PASSWORD
+        sync: false

@@ -12,6 +12,7 @@
  *   - an unsigned request for the same body is refused
  *   - a replayed request is refused
  *   - another user cannot read the device
+ *   - role escalation is impossible from a client body
  *
  * Exit code 0 = all checks passed.
  */
@@ -276,6 +277,30 @@ async function main() {
 
   const anonymous = await call('GET', '/devices');
   check('unauthenticated device listing is refused', anonymous.status === 401, anonymous.text);
+
+  // ---- 7. RBAC over real HTTP ---------------------------------------------
+  // Self-registration can never mint a privileged role, so these prove the
+  // escalation route is closed from both directions.
+  const escalation = await call('POST', '/auth/register', {
+    body: { email: `smoke-escalate-${runId}@example.com`, password, role: 'admin' },
+  });
+  check(
+    'a client supplied role is ignored (registration stays owner)',
+    escalation.status === 201 && escalation.body?.data?.user?.role === 'owner',
+    escalation.text
+  );
+
+  const usersList = await call('GET', '/auth/users', { token });
+  check('an owner cannot list accounts (403)', usersList.status === 403, usersList.text);
+
+  const usersCreate = await call('POST', '/auth/users', {
+    token,
+    body: { email: `smoke-fake-admin-${runId}@example.com`, password, role: 'admin' },
+  });
+  check('an owner cannot create an admin (403)', usersCreate.status === 403, usersCreate.text);
+
+  const revokeByStranger = await call('POST', `/devices/${deviceId}/revoke`, { token: strangerToken });
+  check('a non-owner cannot revoke a device', revokeByStranger.status === 403 || revokeByStranger.status === 404, revokeByStranger.text);
 
   // ---- summary ------------------------------------------------------------
   console.log(`\n${passed} passed, ${failed} failed`);

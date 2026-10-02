@@ -4,8 +4,8 @@
  * Socket.IO realtime layer (FR-E4, §21).
  *
  * Authorization is performed at handshake and again on every room join:
- * a socket may only subscribe to a device it owns (or any device if admin),
- * so live data is never leaked to the wrong account (threat T8).
+ * a socket may only subscribe to a device it owns (admin/manager may watch the
+ * fleet), so live data is never leaked to the wrong account (threat T8).
  *
  * Rooms:
  *   user:<userId>       every socket of one account
@@ -16,6 +16,7 @@ const { Server } = require('socket.io');
 const config = require('../config');
 const logger = require('../config/logger');
 const { verifyAccessToken } = require('../services/token.service');
+const { isPrivileged } = require('../utils/roles');
 const { User, Device } = require('../models');
 const emitter = require('./emitter');
 
@@ -66,8 +67,7 @@ function createSocketServer(httpServer) {
       try {
         const device = await Device.findOne({ deviceId }).select('owner');
         const isOwner = device && device.owner && device.owner.toString() === userId;
-        const isAdmin = socket.data.user.role === 'admin';
-        if (!device || (!isOwner && !isAdmin)) {
+        if (!device || (!isOwner && !isPrivileged(socket.data.user))) {
           return socket.emit('error', {
             code: 'SUBSCRIBE_FORBIDDEN',
             message: 'You are not allowed to watch this device',
