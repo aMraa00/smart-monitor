@@ -52,6 +52,27 @@ npm run dev               # http://localhost:5173
 
 Демо нэвтрэлт: `owner@example.com` / `Str0ng!Passw0rd`
 
+## Хоёр environment хувьсагч заавал хэрэгтэй
+
+Production дээр хоёр утгыг **яг зөв** тавьхгүй бол апп ажиллахгүй:
+
+| Хувьсагч | Дээр байх газар | Жишээ |
+|---|---|---|
+| `VITE_API_BASE_URL` | Vercel env | `https://smart-monitor-7rza.onrender.com` |
+| `CLIENT_URL` | Render env | `https://smart-monitor-v1.vercel.app` |
+
+Хоёр дахь алдаа нь **үнэхээр нууц** — `VITE_API_BASE_URL` дээрээ **trailing space**
+орсон бол хүсэлт `https://host%20/api/v1/...` болж `ERR_NAME_NOT_RESOLVED` гарна,
+харин `CLIENT_URL` тохируулаагүй бол бүх хүсэлт `blocked by CORS policy` болно.
+
+Хоёр түлхүүр дүрэм:
+- **Trailing space/slash байхгүй** — яг `scheme+host`, үсгээр дуусна
+- **`CLIENT_URL` нь таны Vercel-ийн үндсэн хаяг**, `web-<hash>-...vercel.app` биш
+  (тэр нь deploy бүрт солигддог тэгвэл хэзээ ч хуусаж, зогсоно)
+
+Алдаа гарвал Render лог дахь `cors rejected origin - add it to CLIENT_URL`
+гэсэн мөрөөс яг аль origin хоригдсон болохыг шууд харна.
+
 ## Роли (RBAC)
 
 Дөрвөн role байна; бүгд **зөвхөн сервер дээр** хүчин төгөлдөр (үүсгэсэн олонхон

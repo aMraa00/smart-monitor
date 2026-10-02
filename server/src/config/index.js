@@ -39,6 +39,23 @@ function intEnv(name, fallback) {
   return parsed;
 }
 
+/**
+ * Parse the comma separated CLIENT_URL allow-list.
+ *
+ * Two deployment foot-guns are handled here, both of which otherwise produce a
+ * silent "blocked by CORS policy" in the browser:
+ *   - a pasted trailing space, which would never match a real Origin header
+ *   - a missing value, which used to fall back to `localhost:5173` even in
+ *     production, so NO real origin was ever allowed
+ */
+function clientUrls() {
+  const raw = process.env.CLIENT_URL || '';
+  return raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 const config = {
   env: NODE_ENV,
   isProd,
@@ -48,10 +65,7 @@ const config = {
   port: intEnv('PORT', 5000),
   apiPrefix: '/api/v1',
 
-  clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173')
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean),
+  clientUrls: clientUrls(),
 
   mongoUri: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/smart_monitor_v1',
 

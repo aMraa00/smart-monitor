@@ -10,8 +10,10 @@ services:
       - key: NODE_ENV
         value: production
       # Render assigns PORT automatically; the server reads process.env.PORT.
+      # Set this to the EXACT web origin (no trailing slash/space), otherwise
+      # every browser request fails the CORS preflight.
       - key: CLIENT_URL
-        sync: false # set to https://<your-app>.vercel.app after the web deploy
+        sync: false # e.g. https://smart-monitor-v1.vercel.app
       - key: MONGO_URI
         sync: false # Atlas: mongodb+srv://<user>:<password>@<cluster>/uhaalag_monitor_v1
       - key: JWT_ACCESS_SECRET

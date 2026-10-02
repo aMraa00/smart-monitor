@@ -37,11 +37,21 @@ function createApp() {
   );
 
   // ---- CORS -----------------------------------------------------------------
+  // The browser sends the request Origin and the API answers with exactly that
+  // origin. A missing CLIENT_URL is not a silent pass/fail - it is reported at
+  // boot (see server.js) and logged per rejected origin, because a CORS block
+  // with no ACAO header is otherwise very hard to diagnose from the browser.
   app.use(
     cors({
       origin(origin, callback) {
         // Allow same-origin/non-browser clients (devices send no Origin header).
-        if (!origin || config.clientUrls.includes(origin)) return callback(null, true);
+        if (!origin) return callback(null, true);
+        if (config.clientUrls.includes(origin)) return callback(null, true);
+
+        logger.warn(
+          { origin, allowed: config.clientUrls },
+          'cors rejected origin - add it to CLIENT_URL'
+        );
         return callback(null, false);
       },
       credentials: true,

@@ -27,6 +27,18 @@ async function main() {
     logger.info({ ...account }, 'bootstrap account ensured');
   }
 
+  // ---- CORS allow-list sanity check ----------------------------------------
+  // With no CLIENT_URL every browser request is rejected, which surfaces only
+  // as "blocked by CORS policy" in the browser. Fail loudly at boot instead.
+  if (config.clientUrls.length === 0) {
+    logger.warn(
+      { env: config.env },
+      'CLIENT_URL is not set - every browser origin will be blocked by CORS. Set it to your web app origin (e.g. https://your-app.vercel.app)'
+    );
+  } else {
+    logger.info({ clientUrls: config.clientUrls }, 'cors allow-list ready');
+  }
+
   // ---- http + realtime ------------------------------------------------------
   const app = createApp();
   const server = http.createServer(app);
