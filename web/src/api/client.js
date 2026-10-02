@@ -15,7 +15,20 @@ import axios from 'axios';
 
 export const API_PREFIX = '/api/v1';
 
-const baseURL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+/**
+ * Normalise the configured API origin.
+ *
+ * Deployment UIs (Vercel dashboard, Render, .env editors) make it very easy to
+ * paste a trailing space or newline, which lands in the bundle verbatim and
+ * produces requests like `https://host%20/api/v1/...` -> ERR_NAME_NOT_RESOLVED.
+ * Trimming here makes that mistake impossible to ship, and stripping trailing
+ * slashes keeps `${baseURL}${API_PREFIX}` from producing a double slash.
+ */
+function normaliseBaseUrl(raw) {
+  return String(raw || '').trim().replace(/\/+$/, '');
+}
+
+const baseURL = normaliseBaseUrl(import.meta.env.VITE_API_BASE_URL);
 
 /** Absolute API origin in production ('' = same-origin dev proxy). */
 export const API_BASE = baseURL;
