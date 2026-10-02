@@ -73,6 +73,23 @@ Production дээр хоёр утгыг **яг зөв** тавьхгүй бол 
 Алдаа гарвал Render лог дахь `cors rejected origin - add it to CLIENT_URL`
 гэсэн мөрөөс яг аль origin хоригдсон болохыг шууд харна.
 
+⚠️ **Анхаарах нэг үсэг:** Vercel хаяг дээр `l` (жижиг L) ба `i` хоёр үсэг
+үзэгдэхтэй адилхан харагдана. `web-psi-lnky-80.vercel.app` гэж бичих ёстой.
+Хэрэв дээрхь зөрүүтэй бол бүх хүсэлт `blocked by CORS policy` болно.
+Баталгаа: `curl -I -H "Origin: https://<domain>" <API>/api/v1/health`
+
+## Нууцлал солих
+
+`npm run seed` үүсгэсэн аккаунтууд **амьд** — API болон локал `mongod` нэг
+датабейз ашигладаг тул тэдгээрийн password нь жинхэнэ credential. Тиймээс
+бичдэг файлд хэзээ ч хадгахгүйгээр солино:
+
+```bash
+node scripts/reset-password.js admin@example.com 'New!Str0ngPassw0rd'
+```
+
+Үүний хэвээр **өөрөөр сонсох** бөгөөд хэзээ ч Git-т commit хийхгүй.
+
 ## Роли (RBAC)
 
 Дөрвөн role байна; бүгд **зөвхөн сервер дээр** хүчин төгөлдөр (үүсгэсэн олонхон
