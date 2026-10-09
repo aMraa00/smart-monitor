@@ -39,3 +39,7 @@ coverage/
 # local databases
 data/
 
+# platformio project template inside firmware/ (redundant: root rules above
+# already ignore .pio/, build artifacts and editor files)
+firmware/smart_monitor_v1/.gitignore
+
